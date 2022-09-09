@@ -20,7 +20,7 @@ type Channel struct {
 	errorCallBack     func(ctx context.Context, err error)
 }
 
-func (c Channel) Consume(handler goChan.Handler) {
+func (c *Channel) Consume(handler goChan.Handler) {
 	ctx := context.Background()
 	handler = goChan.WrapMiddleware(c.readerMiddleWares, handler)
 	callback := func(client mqtt.Client, message mqtt.Message) {
@@ -34,7 +34,7 @@ func (c Channel) Consume(handler goChan.Handler) {
 	}
 }
 
-func (c Channel) Produce(ctx context.Context, messageInterface goChan.MessageInterface) error {
+func (c *Channel) Produce(ctx context.Context, messageInterface goChan.MessageInterface) error {
 	handler := func(context.Context, goChan.MessageInterface) error {
 		token := c.writer.Publish(c.name, byte(c.qos), true, messageInterface)
 		if token.Wait() && token.Error() != nil {
@@ -42,16 +42,16 @@ func (c Channel) Produce(ctx context.Context, messageInterface goChan.MessageInt
 		}
 		return nil
 	}
-
-	handler = goChan.WrapMiddleware(c.writerMiddleWares, handler)
-
+	if len(c.writerMiddleWares) > 0 {
+		handler = goChan.WrapMiddleware(c.writerMiddleWares, handler)
+	}
 	return handler(ctx, messageInterface)
 }
 
-func (c Channel) SetReaderMiddleWares(mw ...goChan.Middleware) {
+func (c *Channel) SetReaderMiddleWares(mw ...goChan.Middleware) {
 	c.readerMiddleWares = mw
 }
 
-func (c Channel) SetWriterMiddleWares(mw ...goChan.Middleware) {
+func (c *Channel) SetWriterMiddleWares(mw ...goChan.Middleware) {
 	c.writerMiddleWares = mw
 }
