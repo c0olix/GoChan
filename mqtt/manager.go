@@ -93,10 +93,7 @@ func (m Manager) NewClient(config ChannelConfig) (*mqtt.Client, error) {
 
 func (m Manager) createMqttClientId() (string, error) {
 	hostname, _ := os.Hostname()
-	aUUID, err := uuid.NewUUID()
-	if err != nil {
-		return "", errors.Wrap(err, "unable to create uuid")
-	}
+	aUUID := uuid.New()
 	clientId := hostname + aUUID.String()
 	return clientId, nil
 }

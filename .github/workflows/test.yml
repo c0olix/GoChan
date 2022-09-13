@@ -11,8 +11,13 @@ jobs:
     name: Go test
     steps:
       - uses: actions/checkout@master
+      - name: Start containers
+        run: docker-compose -f "infra/docker-compose.yaml" up -d
       - uses: reviewdog/action-golangci-lint@v2
         with:
           fail_on_error: true
           go_version: 1.19
       - run: go test ./...
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f "infra/docker-compose.yaml" down

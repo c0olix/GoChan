@@ -14,6 +14,8 @@ jobs:
         with:
           fail_on_error: true
           go_version: 1.19
+      - name: Start containers
+        run: docker-compose -f "infra/docker-compose.yaml" up -d
       - run: go test ./...
       - name: Conventional Changelog Action
         uses: TriPSs/conventional-changelog-action@v3
@@ -21,3 +23,6 @@ jobs:
           github-token: ${{ secrets.github_token }}
           version-file: ./version.json
           release-count: 0
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f "infra/docker-compose.yaml" down
