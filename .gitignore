@@ -1,2 +1,4 @@
 /.idea/
 /gensrc/
+infra/data
+infra/log
