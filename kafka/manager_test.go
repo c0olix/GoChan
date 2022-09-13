@@ -13,7 +13,7 @@ import (
 
 func Test_e2e(t *testing.T) {
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, time.Second*15)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*60)
 	defer cancel()
 
 	config := ChannelConfig{
@@ -32,7 +32,9 @@ func Test_e2e(t *testing.T) {
 	logger := logrus.StandardLogger()
 	logger.SetLevel(logrus.DebugLevel)
 	channel.SetReaderMiddleWares(middleware.Logger(logger))
+	called := false
 	handler := func(ctx context.Context, message goChan.MessageInterface) error {
+		called = true
 		msg, ok := message.(kafka.Message)
 		assert.True(t, ok)
 		assert.Equal(t, "hallo", string(msg.Value))
@@ -44,4 +46,10 @@ func Test_e2e(t *testing.T) {
 	}
 	err = channel.Produce(ctx, msg)
 	assert.NoError(t, err)
+	for {
+		if called {
+			break
+		}
+	}
+	assert.True(t, called)
 }
