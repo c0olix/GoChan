@@ -17,9 +17,9 @@ func Test_e2e(t *testing.T) {
 	defer cancel()
 
 	config := ChannelConfig{
-		host: "localhost",
-		port: 8883,
-		qos:  2,
+		Host: "localhost",
+		Port: 8883,
+		Qos:  2,
 	}
 
 	manager, err := NewManager(config)

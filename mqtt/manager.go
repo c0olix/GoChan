@@ -32,11 +32,11 @@ func NewManager(config goChan.ConfigInterface) (*Manager, error) {
 }
 
 type ChannelConfig struct {
-	host     string
-	port     int
-	username string
-	password string
-	qos      int
+	Host     string
+	Port     int
+	Username string
+	Password string
+	Qos      int
 }
 
 func (m Manager) CreateChannel(name string, errorCallback func(ctx context.Context, err error), config goChan.ConfigInterface) (goChan.ChannelInterface, error) {
@@ -55,7 +55,7 @@ func (m Manager) CreateChannel(name string, errorCallback func(ctx context.Conte
 	}
 	channel := &Channel{
 		name:          name,
-		qos:           conf.qos,
+		qos:           conf.Qos,
 		reader:        *reader,
 		writer:        *writer,
 		errorCallBack: errorCallback,
@@ -72,7 +72,7 @@ func (m Manager) CreateChannel(name string, errorCallback func(ctx context.Conte
 func (m Manager) NewClient(config ChannelConfig) (*mqtt.Client, error) {
 	opts := mqtt.NewClientOptions()
 
-	server := fmt.Sprintf("tcp://%s:%d", config.host, config.port)
+	server := fmt.Sprintf("tcp://%s:%d", config.Host, config.Port)
 	opts.AddBroker(server)
 
 	clientId, err := m.createMqttClientId()
@@ -81,11 +81,11 @@ func (m Manager) NewClient(config ChannelConfig) (*mqtt.Client, error) {
 	}
 	opts.SetClientID(clientId)
 
-	if config.username != "" {
-		opts.SetUsername(config.username)
+	if config.Username != "" {
+		opts.SetUsername(config.Username)
 	}
-	if config.password != "" {
-		opts.SetUsername(config.password)
+	if config.Password != "" {
+		opts.SetUsername(config.Password)
 	}
 	client := mqtt.NewClient(opts)
 	return &client, err
