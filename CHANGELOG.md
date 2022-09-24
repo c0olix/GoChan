@@ -1,3 +1,12 @@
+## [0.2.1](https://github.com/c0olix/goChan/compare/v0.2.0...v0.2.1) (2022-09-24)
+
+
+### Bug Fixes
+
+* export mqtt config ([82bacd3](https://github.com/c0olix/goChan/commit/82bacd34fbc10944d6664b398ce2156504a23956))
+
+
+
 # [0.2.0](https://github.com/c0olix/goChan/compare/v0.1.0...v0.2.0) (2022-09-13)
 
 
