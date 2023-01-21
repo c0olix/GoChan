@@ -1,3 +1,12 @@
+# [0.3.0](https://github.com/c0olix/goChan/compare/v0.2.1...v0.3.0) (2023-01-21)
+
+
+### Features
+
+* reconnect mqtt ([738bdf5](https://github.com/c0olix/goChan/commit/738bdf5e971920065507c2c10ddc6f5c821b958a))
+
+
+
 ## [0.2.1](https://github.com/c0olix/goChan/compare/v0.2.0...v0.2.1) (2022-09-24)
 
 
