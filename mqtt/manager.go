@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"os"
+	"time"
 )
 
 type Manager struct {
@@ -80,6 +81,10 @@ func (m Manager) NewClient(config ChannelConfig) (*mqtt.Client, error) {
 		return nil, errors.Wrap(err, "unable to create client id")
 	}
 	opts.SetClientID(clientId)
+	opts.SetPingTimeout(10 * time.Second)
+	opts.SetKeepAlive(10 * time.Second)
+	opts.SetAutoReconnect(true)
+	opts.SetMaxReconnectInterval(10 * time.Second)
 
 	if config.username != "" {
 		opts.SetUsername(config.username)
