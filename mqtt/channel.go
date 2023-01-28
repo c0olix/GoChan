@@ -14,7 +14,8 @@ import (
 type Channel struct {
 	name              string
 	qos               int
-	client            mqtt.Client
+	reader            mqtt.Client
+	writer            mqtt.Client
 	readerMiddleWares []goChan.Middleware
 	writerMiddleWares []goChan.Middleware
 	errorCallBack     func(ctx context.Context, err error)
@@ -31,11 +32,19 @@ func (c *Channel) Consume(handler goChan.Handler) {
 	}
 	go func() {
 		for {
-			if !c.client.IsConnected() {
-				if token := c.client.Connect(); token.Wait() && token.Error() != nil {
+			if !c.reader.IsConnected() {
+				if token := c.reader.Connect(); token.Wait() && token.Error() != nil {
 					c.errorCallBack(ctx, errors.Wrap(token.Error(), "unable to connect to broker"))
 				}
-				if token := c.client.Subscribe(c.name, byte(c.qos), callback); token.Wait() && token.Error() != nil {
+				iterations := 0
+				for {
+					if c.reader.IsConnected() || iterations >= 10 {
+						break
+					}
+					iterations++
+					time.Sleep(time.Millisecond * 100)
+				}
+				if token := c.reader.Subscribe(c.name, byte(c.qos), callback); token.Wait() && token.Error() != nil {
 					c.errorCallBack(ctx, errors.Wrap(token.Error(), "unable to subscribe to topic"))
 				}
 			}
@@ -45,13 +54,13 @@ func (c *Channel) Consume(handler goChan.Handler) {
 }
 
 func (c *Channel) Produce(ctx context.Context, messageInterface goChan.MessageInterface) error {
-	if !c.client.IsConnected() {
-		if token := c.client.Connect(); token.Wait() && token.Error() != nil {
+	if !c.writer.IsConnected() {
+		if token := c.writer.Connect(); token.Wait() && token.Error() != nil {
 			c.errorCallBack(ctx, errors.Wrap(token.Error(), "unable to connect to broker"))
 		}
 	}
 	handler := func(context.Context, goChan.MessageInterface) error {
-		token := c.client.Publish(c.name, byte(c.qos), true, messageInterface)
+		token := c.writer.Publish(c.name, byte(c.qos), true, messageInterface)
 		if token.Wait() && token.Error() != nil {
 			return errors.Wrap(token.Error(), "unable to publish")
 		}

@@ -44,7 +44,11 @@ func (m Manager) CreateChannel(name string, errorCallback func(ctx context.Conte
 	if !ok {
 		return nil, errors.New("unable to convert to mqtt channel config")
 	}
-	client, err := m.NewClient(conf)
+	reader, err := m.NewClient(conf)
+	if err != nil {
+		return nil, errors.Wrap(err, "unable to create new mqtt client")
+	}
+	writer, err := m.NewClient(conf)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to create new mqtt client")
 	}
@@ -52,7 +56,8 @@ func (m Manager) CreateChannel(name string, errorCallback func(ctx context.Conte
 	channel := &Channel{
 		name:          name,
 		qos:           conf.Qos,
-		client:        *client,
+		reader:        *reader,
+		writer:        *writer,
 		errorCallBack: errorCallback,
 	}
 	return channel, nil

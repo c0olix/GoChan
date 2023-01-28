@@ -33,7 +33,9 @@ func Test_e2e(t *testing.T) {
 	logger := logrus.StandardLogger()
 	logger.SetLevel(logrus.DebugLevel)
 	channel.SetReaderMiddleWares(middleware.Logger(logger))
+	called := false
 	handler := func(ctx context.Context, message goChan.MessageInterface) error {
+		called = true
 		msg, ok := message.(mqtt.Message)
 		assert.True(t, ok)
 		assert.Equal(t, "hallo", string(msg.Payload()))
@@ -43,4 +45,10 @@ func Test_e2e(t *testing.T) {
 
 	err = channel.Produce(ctx, "hallo")
 	assert.NoError(t, err)
+
+	for {
+		if called {
+			break
+		}
+	}
 }
