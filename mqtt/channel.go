@@ -5,6 +5,7 @@ import (
 	"github.com/c0olix/goChan"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/pkg/errors"
+	"time"
 )
 
 //go:generate mockgen -destination ../gensrc/mocks/mqtt/paho.mqtt.golang_client.go -source $GOPATH/pkg/mod/github.com/eclipse/paho.mqtt.golang@v1.4.1/client.go
@@ -13,8 +14,7 @@ import (
 type Channel struct {
 	name              string
 	qos               int
-	reader            mqtt.Client
-	writer            mqtt.Client
+	client            mqtt.Client
 	readerMiddleWares []goChan.Middleware
 	writerMiddleWares []goChan.Middleware
 	errorCallBack     func(ctx context.Context, err error)
@@ -29,14 +29,29 @@ func (c *Channel) Consume(handler goChan.Handler) {
 			c.errorCallBack(ctx, errors.Wrap(err, "handler encountered an error"))
 		}
 	}
-	if token := c.reader.Subscribe(c.name, byte(c.qos), callback); token.Wait() && token.Error() != nil {
-		c.errorCallBack(ctx, errors.Wrap(token.Error(), "unable to subscribe to topic"))
-	}
+	go func() {
+		for {
+			if !c.client.IsConnected() {
+				if token := c.client.Connect(); token.Wait() && token.Error() != nil {
+					c.errorCallBack(ctx, errors.Wrap(token.Error(), "unable to connect to broker"))
+				}
+				if token := c.client.Subscribe(c.name, byte(c.qos), callback); token.Wait() && token.Error() != nil {
+					c.errorCallBack(ctx, errors.Wrap(token.Error(), "unable to subscribe to topic"))
+				}
+			}
+			time.Sleep(time.Second)
+		}
+	}()
 }
 
 func (c *Channel) Produce(ctx context.Context, messageInterface goChan.MessageInterface) error {
+	if !c.client.IsConnected() {
+		if token := c.client.Connect(); token.Wait() && token.Error() != nil {
+			c.errorCallBack(ctx, errors.Wrap(token.Error(), "unable to connect to broker"))
+		}
+	}
 	handler := func(context.Context, goChan.MessageInterface) error {
-		token := c.writer.Publish(c.name, byte(c.qos), true, messageInterface)
+		token := c.client.Publish(c.name, byte(c.qos), true, messageInterface)
 		if token.Wait() && token.Error() != nil {
 			return errors.Wrap(token.Error(), "unable to publish")
 		}

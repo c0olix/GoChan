@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"os"
-	"time"
 )
 
 type Manager struct {
@@ -45,27 +44,16 @@ func (m Manager) CreateChannel(name string, errorCallback func(ctx context.Conte
 	if !ok {
 		return nil, errors.New("unable to convert to mqtt channel config")
 	}
-	reader, err := m.NewClient(conf)
+	client, err := m.NewClient(conf)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to create new mqtt reader")
+		return nil, errors.Wrap(err, "unable to create new mqtt client")
 	}
 
-	writer, err := m.NewClient(conf)
-	if err != nil {
-		return nil, errors.Wrap(err, "unable to create new mqtt reader")
-	}
 	channel := &Channel{
 		name:          name,
 		qos:           conf.Qos,
-		reader:        *reader,
-		writer:        *writer,
+		client:        *client,
 		errorCallBack: errorCallback,
-	}
-	if token := channel.writer.Connect(); token.Wait() && token.Error() != nil {
-		return nil, errors.Wrap(token.Error(), "unable to connect to broker")
-	}
-	if token := channel.reader.Connect(); token.Wait() && token.Error() != nil {
-		return nil, errors.Wrap(token.Error(), "unable to connect to broker")
 	}
 	return channel, nil
 }
@@ -81,10 +69,6 @@ func (m Manager) NewClient(config ChannelConfig) (*mqtt.Client, error) {
 		return nil, errors.Wrap(err, "unable to create client id")
 	}
 	opts.SetClientID(clientId)
-	opts.SetPingTimeout(10 * time.Second)
-	opts.SetKeepAlive(10 * time.Second)
-	opts.SetAutoReconnect(true)
-	opts.SetMaxReconnectInterval(10 * time.Second)
 
 	if config.Username != "" {
 		opts.SetUsername(config.Username)
