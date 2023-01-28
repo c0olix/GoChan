@@ -1,3 +1,13 @@
+## [0.3.1](https://github.com/c0olix/goChan/compare/v0.3.0...v0.3.1) (2023-01-28)
+
+
+### Bug Fixes
+
+* issues with same client ([2318942](https://github.com/c0olix/goChan/commit/2318942f048afa75174cfeee284fc87f6f849137))
+* resubscribe on reconnect ([4b17c5b](https://github.com/c0olix/goChan/commit/4b17c5b3d61268949326bc203db36f760d852079))
+
+
+
 # [0.3.0](https://github.com/c0olix/goChan/compare/v0.2.1...v0.3.0) (2023-01-21)
 
 
