@@ -1,7 +1,6 @@
 package kafka
 
 import (
-	"context"
 	"encoding/json"
 	"github.com/c0olix/goChan"
 	"github.com/pkg/errors"
@@ -55,7 +54,7 @@ func (manager Manager) Ready() error {
 	return nil
 }
 
-func (manager Manager) CreateChannel(name string, errorCallback func(ctx context.Context, err error), config goChan.ConfigInterface) (goChan.ChannelInterface, error) {
+func (manager Manager) CreateChannel(name string, config goChan.ConfigInterface) (goChan.ChannelInterface, error) {
 	bytes, err := json.Marshal(config)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to convert to kafka channel config")
@@ -110,7 +109,6 @@ func (manager Manager) CreateChannel(name string, errorCallback func(ctx context
 	}
 
 	return &Channel{
-		reader:        reader,
-		writer:        &writer,
-		errorCallBack: errorCallback}, nil
+		reader: reader,
+		writer: &writer}, nil
 }

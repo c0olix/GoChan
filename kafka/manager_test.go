@@ -23,11 +23,8 @@ func Test_e2e(t *testing.T) {
 	}
 
 	manager := NewManager("localhost")
-	errorCallback := func(ctx context.Context, err error) {
-		assert.NoError(t, err)
-	}
 
-	channel, err := manager.CreateChannel("TEST", errorCallback, config)
+	channel, err := manager.CreateChannel("TEST", config)
 	assert.NoError(t, err)
 	logger := logrus.StandardLogger()
 	logger.SetLevel(logrus.DebugLevel)
