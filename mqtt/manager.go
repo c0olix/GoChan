@@ -1,7 +1,6 @@
 package mqtt
 
 import (
-	"context"
 	"fmt"
 	"github.com/c0olix/goChan"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
@@ -39,7 +38,7 @@ type ChannelConfig struct {
 	Qos      int
 }
 
-func (m Manager) CreateChannel(name string, errorCallback func(ctx context.Context, err error), config goChan.ConfigInterface) (goChan.ChannelInterface, error) {
+func (m Manager) CreateChannel(name string, config goChan.ConfigInterface) (goChan.ChannelInterface, error) {
 	conf, ok := config.(ChannelConfig)
 	if !ok {
 		return nil, errors.New("unable to convert to mqtt channel config")
@@ -54,11 +53,10 @@ func (m Manager) CreateChannel(name string, errorCallback func(ctx context.Conte
 	}
 
 	channel := &Channel{
-		name:          name,
-		qos:           conf.Qos,
-		reader:        *reader,
-		writer:        *writer,
-		errorCallBack: errorCallback,
+		name:   name,
+		qos:    conf.Qos,
+		reader: *reader,
+		writer: *writer,
 	}
 	return channel, nil
 }

@@ -23,32 +23,35 @@ type Channel struct {
 	writer            WriterInterface
 	readerMiddleWares []goChan.Middleware
 	writerMiddleWares []goChan.Middleware
-	errorCallBack     func(ctx context.Context, err error)
 }
 
-func (channel *Channel) Consume(handler goChan.Handler) {
+func (channel *Channel) Consume(handler goChan.Handler) chan error {
 	handler = goChan.WrapMiddleware(channel.readerMiddleWares, handler)
+	errChan := make(chan error, 1)
 	go func() {
+		defer close(errChan)
 		for {
 			ctx := context.Background()
 			message, err := channel.reader.FetchMessage(ctx)
 			if err != nil {
-				channel.errorCallBack(ctx, errors.Wrap(err, "error while fetching Kafka message"))
-				return
+				errChan <- errors.Wrap(err, "error while fetching Kafka message")
+				continue
 			}
 
 			err = handler(ctx, message)
 			if err != nil {
-				channel.errorCallBack(ctx, errors.Wrap(err, "error while calling callbackfunction"))
-				return
+				errChan <- errors.Wrap(err, "error while calling handler")
+				continue
 			}
+
 			err = channel.reader.CommitMessages(ctx, message)
 			if err != nil {
-				channel.errorCallBack(ctx, errors.Wrap(err, "error while committing Kafka message"))
-				return
+				errChan <- errors.Wrap(err, "error while committing Kafka message")
+				continue
 			}
 		}
 	}()
+	return errChan
 }
 
 func (channel *Channel) Produce(ctx context.Context, proto goChan.MessageInterface) error {

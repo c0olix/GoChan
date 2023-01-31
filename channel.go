@@ -12,7 +12,7 @@ type ConfigInterface = interface {
 }
 
 type ChannelInterface interface {
-	Consume(Handler)
+	Consume(Handler) chan error
 	Produce(context.Context, MessageInterface) error
 	SetReaderMiddleWares(mw ...Middleware)
 	SetWriterMiddleWares(mw ...Middleware)
@@ -33,6 +33,6 @@ func WrapMiddleware(mw []Middleware, handler Handler) Handler {
 }
 
 type ManagerInterface interface {
-	CreateChannel(name string, errorCallback func(ctx context.Context, err error), config ConfigInterface) (ChannelInterface, error)
+	CreateChannel(name string, config ConfigInterface) (ChannelInterface, error)
 	Ready() error
 }
