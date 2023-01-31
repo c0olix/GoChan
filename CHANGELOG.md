@@ -1,3 +1,15 @@
+# [1.0.0](https://github.com/c0olix/goChan/compare/v0.3.1...v1.0.0) (2023-01-31)
+
+
+* feat!: return channel instead of using error callbacks ([c16f46c](https://github.com/c0olix/goChan/commit/c16f46c6dac532d3ac0979f09eda79235e2fcabe))
+
+
+### BREAKING CHANGES
+
+* method signature changes
+
+
+
 ## [0.3.1](https://github.com/c0olix/goChan/compare/v0.3.0...v0.3.1) (2023-01-28)
 
 
